@@ -1,5 +1,5 @@
 {
-  description = "A simple Python project";
+  description = "A simple Python development shell";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -15,8 +15,10 @@
       in
       {
         devShells.default = pkgs.mkShell {
+          name = "pylox-dev";
           buildInputs = with pkgs; [ 
             (python3.withPackages (ps: []))
+            nodePackages.pyright
           ];
         };
       }
