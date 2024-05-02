@@ -1,5 +1,6 @@
 from loxtoken import Token
 from loxtokentype import TokenType as TT
+import lox as Lox
 
 
 class Scanner:
@@ -14,12 +15,12 @@ class Scanner:
 
 
     def scanTokens(self) -> list[Token]:
-        while not isAtEnd():
+        while not self.isAtEnd():
             # We are at the beginning of the next lexeme.
             self.start = self.current
-            scanToken()
+            self.scanToken()
 
-        self.tokens.add(Token(TT.EOF, "", None, self.line))
+        self.tokens.append(Token(TT.EOF, "", None, self.line))
         return self.tokens
 
     
@@ -46,6 +47,25 @@ class Scanner:
                 self.addToken(TT.SEMICOLON)
             case '*':
                 self.addToken(TT.STAR)
+            case '!':
+                self.addToken(TT.BANG_EQUAL if self.match('=') else TT.BANG) 
+            case '=':
+                self.addToken(TT.EQUAL_EQUAL if self.match('=') else TT.EQUAL) 
+            case '<':
+                self.addToken(TT.LESS_EQUAL if self.match('=') else TT.LESS) 
+            case '>':
+                self.addToken(TT.GREATER_EQUAL if self.match('=') else TT.GREATER) 
+            case _:
+                Lox.error(self.line, "Unexpected character.")
+
+    def match(self, expected: str) -> bool:
+        if self.isAtEnd():
+            return False
+        if self.source[self.current] != expected:
+            return False
+
+        self.current = self.current + 1
+        return True
 
 
     def isAtEnd(self) -> bool:
@@ -58,11 +78,11 @@ class Scanner:
 
 
     def addToken(self, type: TT) -> None:
-        addToken(type, null)
+        self.addTokenWithLiteral(type, None)
 
 
     def addTokenWithLiteral(self, type: TT, literal: object) -> None:
-        text = self.source[self.start, self.current]
-        self.tokens.push(Token(type, text, literal, self.line))
+        text = self.source[self.start:self.current]
+        self.tokens.append(Token(type, text, literal, self.line))
 
     
