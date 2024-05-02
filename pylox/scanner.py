@@ -55,6 +55,16 @@ class Scanner:
                 self.addToken(TT.LESS_EQUAL if self.match('=') else TT.LESS) 
             case '>':
                 self.addToken(TT.GREATER_EQUAL if self.match('=') else TT.GREATER) 
+            case '/':
+                if self.match('/'):
+                    while self.peek() != '\n' and not self.isAtEnd():
+                        self.advance()
+                else:
+                    self.addToken(TT.SLASH)
+            case ' ' | '\r' | '\t':
+                pass
+            case '\n':
+                self.line = self.line + 1
             case _:
                 Lox.error(self.line, "Unexpected character.")
 
@@ -66,6 +76,11 @@ class Scanner:
 
         self.current = self.current + 1
         return True
+
+    def peek(self) -> str:
+        if self.isAtEnd():
+            return '\0'
+        return self.source[self.current]
 
 
     def isAtEnd(self) -> bool:
