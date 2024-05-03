@@ -17,7 +17,9 @@
         devShells.default = pkgs.mkShell {
           name = "pylox-dev";
           buildInputs = with pkgs; [ 
-            (python3.withPackages (ps: []))
+            (python3.withPackages (ps: with ps; with python3Packages; [
+              ipython
+            ]))
             nodePackages.pyright
           ];
         };
