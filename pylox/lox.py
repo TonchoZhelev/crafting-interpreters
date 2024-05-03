@@ -6,7 +6,9 @@ from errors import hadError
 def run(source: str) -> None:
     scanner = Scanner(source)
     tokens = scanner.scanTokens()
-    print(tokens)
+
+    for token in tokens:
+        print(token)
 
 
 def runFile(path: str) -> None:
