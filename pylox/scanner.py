@@ -77,12 +77,14 @@ class Scanner:
                 if self.match('/'):
                     while self.peek() != '\n' and not self.isAtEnd():
                         self.advance()
+                elif self.match('*'):
+                    self.multilineComment()
                 else:
                     self.addToken(TT.SLASH)
             case ' ' | '\r' | '\t':
                 pass # skip whitespace characters
             case '\n':
-                self.line = self.line + 1
+                self.line += 1
             case '"':
                 self.string()
             case c if self.isDigit(c):
@@ -91,6 +93,28 @@ class Scanner:
                 self.identifier()
             case _:
                 error(self.line, "Unexpected character.")
+
+
+    def multilineComment(self) -> None:
+        opening = 1 # unmatched comment openings
+
+        while opening > 0:
+            if self.isAtEnd():
+                error(self.line, "Unterminated comment.")
+                return
+            elif self.isAtMultilineCommentStart():
+                opening = opening + 1
+                self.advance(by = 2)
+            elif self.isAtMultilineCommentEnd():
+                opening = opening - 1
+                self.advance(by = 2)
+            elif self.peek() == '\n':
+                self.line += 1
+                self.advance()
+            else:
+                self.advance()
+
+
 
     def identifier(self) -> None:
         global _keywords
@@ -133,7 +157,7 @@ class Scanner:
 
         self.advance()
 
-        value = self.source[1:-1]
+        value = self.source[self.start + 1: self.current - 1]
         self.addToken(TT.STRING, literal=value)
        
 
@@ -158,6 +182,13 @@ class Scanner:
             return '\0'
         return self.source[self.current + 1]
 
+    
+    def isAtMultilineCommentStart(self) -> bool:
+        return (self.peek() == '/' and self.peekNext() == '*')
+
+
+    def isAtMultilineCommentEnd(self) -> bool:
+        return (self.peek() == '*' and self.peekNext() == '/')
 
 
     def isAlpha(self, c: str) -> bool:
@@ -178,9 +209,9 @@ class Scanner:
         return self.current >= len(self.source)
 
 
-    def advance(self) -> str:
-        self.current += 1
-        return self.source[self.current - 1]
+    def advance(self, *, by: int = 1) -> str:
+        self.current += by
+        return self.source[self.current - by: self.current]
 
 
     def addToken(self, type: TT, *, literal: object = None) -> None:
