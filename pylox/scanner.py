@@ -1,7 +1,6 @@
 from loxtoken import Token
 from loxtokentype import TokenType as TT
-import lox as Lox
-
+from errors import error
 
 _keywords: dict[str, TT] = {
         'and': TT.AND,
@@ -91,7 +90,7 @@ class Scanner:
             case c if self.isAlpha(c):
                 self.identifier()
             case _:
-                Lox.error(self.line, "Unexpected character.")
+                error(self.line, "Unexpected character.")
 
     def identifier(self) -> None:
         global _keywords
@@ -129,7 +128,7 @@ class Scanner:
             self.advance()
 
         if self.isAtEnd():
-            Lox.error(self.line, "Unterminated string.")
+            error(self.line, "Unterminated string.")
             return
 
         self.advance()
@@ -181,7 +180,7 @@ class Scanner:
 
     def advance(self) -> str:
         self.current += 1
-        return self.source[self.current]
+        return self.source[self.current - 1]
 
 
     def addToken(self, type: TT, *, literal: object = None) -> None:

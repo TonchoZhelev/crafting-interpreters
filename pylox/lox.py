@@ -1,22 +1,12 @@
 import sys
 
-import loxtoken
-
-hadError: bool = False
-
-def error(line: int, message: str):
-    report(line, "", message)
-
-
-def report(line: int, where: str, message: str):
-    global hadError
-    print("[line", line, "] Error", where, ": ", message, file=sys.stderr)
-    hadError = True
-
+from scanner import Scanner
+from errors import hadError
 
 def run(source: str) -> None:
-    for s in source:
-        print(s)
+    scanner = Scanner(source)
+    tokens = scanner.scanTokens()
+    print(tokens)
 
 
 def runFile(path: str) -> None:
