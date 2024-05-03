@@ -18,6 +18,7 @@
           name = "pylox-dev";
           buildInputs = with pkgs; [ 
             (python3.withPackages (ps: with ps; with python3Packages; [
+              pytest
               ipython
             ]))
             nodePackages.pyright
