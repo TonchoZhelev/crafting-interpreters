@@ -65,8 +65,26 @@ class Scanner:
                 pass
             case '\n':
                 self.line = self.line + 1
+            case '"':
+                self.string()
             case _:
                 Lox.error(self.line, "Unexpected character.")
+
+    def string(self) -> None:
+        while self.peek() != '"' and not self.isAtEnd():
+            if self.peek() == '\n':
+                self.line = self.line + 1
+            self.advance()
+
+        if self.isAtEnd():
+            Lox.error(self.line, "Unterminated string.")
+            return
+
+        self.advance()
+
+        value = self.source[1:-1]
+        self.addToken(TT.STRING, literal=value)
+                
 
     def match(self, expected: str) -> bool:
         if self.isAtEnd():
@@ -91,13 +109,6 @@ class Scanner:
         self.current += 1
         return self.source[self.current]
 
-
-    def addToken(self, type: TT) -> None:
-        self.addTokenWithLiteral(type, None)
-
-
-    def addTokenWithLiteral(self, type: TT, literal: object) -> None:
+    def addToken(self, type: TT,*, literal: object = None) -> None:
         text = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line))
-
-    
