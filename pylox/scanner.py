@@ -3,6 +3,25 @@ from loxtokentype import TokenType as TT
 import lox as Lox
 
 
+_keywords: dict[str, TT] = {
+        'and': TT.AND,
+        'class': TT.CLASS,
+        'else': TT.ELSE,
+        'false': TT.FALSE,
+        'for': TT.FOR,
+        'fun': TT.FUN,
+        'if': TT.IF,
+        'nil': TT.NIL,
+        'or': TT.OR,
+        'print': TT.PRINT,
+        'return': TT.RETURN,
+        'super': TT.SUPER,
+        'this': TT.THIS,
+        'true': TT.TRUE,
+        'var': TT.VAR,
+        'while': TT.WHILE,
+        } 
+
 class Scanner:
 
     def __init__(self, source: str):
@@ -67,21 +86,36 @@ class Scanner:
                 self.line = self.line + 1
             case '"':
                 self.string()
-            case c if c.isdigit():
+            case c if self.isDigit(c):
                 self.number()
+            case c if self.isAlpha(c):
+                self.identifier()
             case _:
                 Lox.error(self.line, "Unexpected character.")
 
+    def identifier(self) -> None:
+        global _keywords
+        while self.isAlphaNumeric(self.peek()):
+            self.advance()
+
+        text = self.source[self.start: self.current]
+        type = _keywords.get(text)
+
+        if type is None:
+            type = TT.IDENTIFIER
+
+        self.addToken(type)
+
     def number(self) -> None:
-        while self.peek().isdigit():
+        while self.isDigit(self.peek()):
             self.advance()
 
         # look for fractional part
-        if self.peek() == '.' and self.peekNext().isdigit():
+        if self.peek() == '.' and self.isDigit(self.peekNext()):
             self.advance()
 
             # consume the "."
-            while self.peek().isdigit():
+            while self.isDigit(self.peek()):
                 self.advance()
 
         value = float(self.source[self.start: self.current])
@@ -102,7 +136,7 @@ class Scanner:
 
         value = self.source[1:-1]
         self.addToken(TT.STRING, literal=value)
-                
+       
 
     def match(self, expected: str) -> bool:
         if self.isAtEnd():
@@ -113,15 +147,33 @@ class Scanner:
         self.current = self.current + 1
         return True
 
+
     def peek(self) -> str:
         if self.isAtEnd():
             return '\0'
         return self.source[self.current]
 
+
     def peekNext(self) -> str:
         if self.current + 1 >= len(self.source):
             return '\0'
         return self.source[self.current + 1]
+
+
+
+    def isAlpha(self, c: str) -> bool:
+        return ((c >= 'a' and c <= 'z') or
+                (c >= 'A' and c <= 'Z') or
+                c == '_')
+
+
+    def isAlphaNumeric(self, c: str) -> bool:
+        return self.isAlpha(c) or self.isDigit(c)
+
+
+    def isDigit(self, c: str) -> bool:
+        return c >= '0' and c <= '9'
+
 
     def isAtEnd(self) -> bool:
         return self.current >= len(self.source)
@@ -131,6 +183,9 @@ class Scanner:
         self.current += 1
         return self.source[self.current]
 
+
     def addToken(self, type: TT, *, literal: object = None) -> None:
         text = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line))
+
+
