@@ -62,13 +62,31 @@ class Scanner:
                 else:
                     self.addToken(TT.SLASH)
             case ' ' | '\r' | '\t':
-                pass
+                pass # skip whitespace characters
             case '\n':
                 self.line = self.line + 1
             case '"':
                 self.string()
+            case c if c.isdigit():
+                self.number()
             case _:
                 Lox.error(self.line, "Unexpected character.")
+
+    def number(self) -> None:
+        while self.peek().isdigit():
+            self.advance()
+
+        # look for fractional part
+        if self.peek() == '.' and self.peekNext().isdigit():
+            self.advance()
+
+            # consume the "."
+            while self.peek().isdigit():
+                self.advance()
+
+        value = float(self.source[self.start: self.current])
+        self.addToken(TT.NUMBER, literal = value)
+
 
     def string(self) -> None:
         while self.peek() != '"' and not self.isAtEnd():
@@ -100,6 +118,10 @@ class Scanner:
             return '\0'
         return self.source[self.current]
 
+    def peekNext(self) -> str:
+        if self.current + 1 >= len(self.source):
+            return '\0'
+        return self.source[self.current + 1]
 
     def isAtEnd(self) -> bool:
         return self.current >= len(self.source)
@@ -109,6 +131,6 @@ class Scanner:
         self.current += 1
         return self.source[self.current]
 
-    def addToken(self, type: TT,*, literal: object = None) -> None:
+    def addToken(self, type: TT, *, literal: object = None) -> None:
         text = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line))
