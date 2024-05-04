@@ -1,5 +1,6 @@
 from enum import Enum, unique, auto
 
+
 @unique
 class TokenType(Enum):
     # single character tokens.
@@ -15,7 +16,6 @@ class TokenType(Enum):
     SLASH = auto()
     STAR = auto()
 
-
     # one or two character tokens.
     BANG = auto()
     BANG_EQUAL = auto()
@@ -26,12 +26,10 @@ class TokenType(Enum):
     LESS = auto()
     LESS_EQUAL = auto()
 
-
     # literals.
     IDENTIFIER = auto()
     STRING = auto()
     NUMBER = auto()
-
 
     # keywords.
     AND = auto()
@@ -51,6 +49,4 @@ class TokenType(Enum):
     VAR = auto()
     WHILE = auto()
 
-
     EOF = auto()
-

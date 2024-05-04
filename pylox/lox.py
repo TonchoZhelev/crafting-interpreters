@@ -14,7 +14,7 @@ def run(source: str) -> None:
 def runFile(path: str) -> None:
     global hadError
     bytes = open(path).read()
-    run(bytes);
+    run(bytes)
 
     # Indicate an error in the exit code.
     if hadError:
@@ -28,7 +28,7 @@ def runPrompt() -> None:
     try:
         while True:
             line = input("> ")
-            run(line);
+            run(line)
 
             # Reset flag in REPL
             hadError = False
@@ -42,4 +42,4 @@ if __name__ == "__main__":
     elif len(sys.argv) == 2:
         runFile(sys.argv[1])
     else:
-        runPrompt();
+        runPrompt()

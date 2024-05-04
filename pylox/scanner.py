@@ -3,23 +3,24 @@ from loxtokentype import TokenType as TT
 from errors import error
 
 _keywords: dict[str, TT] = {
-        'and': TT.AND,
-        'class': TT.CLASS,
-        'else': TT.ELSE,
-        'false': TT.FALSE,
-        'for': TT.FOR,
-        'fun': TT.FUN,
-        'if': TT.IF,
-        'nil': TT.NIL,
-        'or': TT.OR,
-        'print': TT.PRINT,
-        'return': TT.RETURN,
-        'super': TT.SUPER,
-        'this': TT.THIS,
-        'true': TT.TRUE,
-        'var': TT.VAR,
-        'while': TT.WHILE,
-        } 
+    'and': TT.AND,
+    'class': TT.CLASS,
+    'else': TT.ELSE,
+    'false': TT.FALSE,
+    'for': TT.FOR,
+    'fun': TT.FUN,
+    'if': TT.IF,
+    'nil': TT.NIL,
+    'or': TT.OR,
+    'print': TT.PRINT,
+    'return': TT.RETURN,
+    'super': TT.SUPER,
+    'this': TT.THIS,
+    'true': TT.TRUE,
+    'var': TT.VAR,
+    'while': TT.WHILE,
+}
+
 
 class Scanner:
 
@@ -31,7 +32,6 @@ class Scanner:
         self.current: int = 0
         self.line: int = 1
 
-
     def scanTokens(self) -> list[Token]:
         while not self.isAtEnd():
             # We are at the beginning of the next lexeme.
@@ -41,7 +41,6 @@ class Scanner:
         self.tokens.append(Token(TT.EOF, "", None, self.line))
         return self.tokens
 
-    
     def scanToken(self) -> None:
         c = self.advance()
         match c:
@@ -66,13 +65,13 @@ class Scanner:
             case '*':
                 self.addToken(TT.STAR)
             case '!':
-                self.addToken(TT.BANG_EQUAL if self.match('=') else TT.BANG) 
+                self.addToken(TT.BANG_EQUAL if self.match('=') else TT.BANG)
             case '=':
-                self.addToken(TT.EQUAL_EQUAL if self.match('=') else TT.EQUAL) 
+                self.addToken(TT.EQUAL_EQUAL if self.match('=') else TT.EQUAL)
             case '<':
-                self.addToken(TT.LESS_EQUAL if self.match('=') else TT.LESS) 
+                self.addToken(TT.LESS_EQUAL if self.match('=') else TT.LESS)
             case '>':
-                self.addToken(TT.GREATER_EQUAL if self.match('=') else TT.GREATER) 
+                self.addToken(TT.GREATER_EQUAL if self.match('=') else TT.GREATER)
             case '/':
                 if self.match('/'):
                     while self.peek() != '\n' and not self.isAtEnd():
@@ -82,7 +81,7 @@ class Scanner:
                 else:
                     self.addToken(TT.SLASH)
             case ' ' | '\r' | '\t':
-                pass # skip whitespace characters
+                pass  # skip whitespace characters
             case '\n':
                 self.line += 1
             case '"':
@@ -94,9 +93,8 @@ class Scanner:
             case _:
                 error(self.line, "Unexpected character.")
 
-
     def multilineComment(self) -> None:
-        opening = 1 # unmatched comment openings
+        opening = 1  # unmatched comment openings
 
         while opening > 0:
             if self.isAtEnd():
@@ -104,17 +102,15 @@ class Scanner:
                 return
             elif self.isAtMultilineCommentStart():
                 opening = opening + 1
-                self.advance(by = 2)
+                self.advance(by=2)
             elif self.isAtMultilineCommentEnd():
                 opening = opening - 1
-                self.advance(by = 2)
+                self.advance(by=2)
             elif self.peek() == '\n':
                 self.line += 1
                 self.advance()
             else:
                 self.advance()
-
-
 
     def identifier(self) -> None:
         global _keywords
@@ -142,8 +138,7 @@ class Scanner:
                 self.advance()
 
         value = float(self.source[self.start: self.current])
-        self.addToken(TT.NUMBER, literal = value)
-
+        self.addToken(TT.NUMBER, literal=value)
 
     def string(self) -> None:
         while self.peek() != '"' and not self.isAtEnd():
@@ -159,7 +154,6 @@ class Scanner:
 
         value = self.source[self.start + 1: self.current - 1]
         self.addToken(TT.STRING, literal=value)
-       
 
     def match(self, expected: str) -> bool:
         if self.isAtEnd():
@@ -170,52 +164,40 @@ class Scanner:
         self.current = self.current + 1
         return True
 
-
     def peek(self) -> str:
         if self.isAtEnd():
             return '\0'
         return self.source[self.current]
-
 
     def peekNext(self) -> str:
         if self.current + 1 >= len(self.source):
             return '\0'
         return self.source[self.current + 1]
 
-    
     def isAtMultilineCommentStart(self) -> bool:
         return (self.peek() == '/' and self.peekNext() == '*')
-
 
     def isAtMultilineCommentEnd(self) -> bool:
         return (self.peek() == '*' and self.peekNext() == '/')
 
-
     def isAlpha(self, c: str) -> bool:
-        return ((c >= 'a' and c <= 'z') or
-                (c >= 'A' and c <= 'Z') or
+        return (('a' <= c <= 'z') or
+                ('A' <= c <= 'Z') or
                 c == '_')
-
 
     def isAlphaNumeric(self, c: str) -> bool:
         return self.isAlpha(c) or self.isDigit(c)
 
-
     def isDigit(self, c: str) -> bool:
-        return c >= '0' and c <= '9'
-
+        return '0' <= c <= '9'
 
     def isAtEnd(self) -> bool:
         return self.current >= len(self.source)
-
 
     def advance(self, *, by: int = 1) -> str:
         self.current += by
         return self.source[self.current - by: self.current]
 
-
     def addToken(self, type: TT, *, literal: object = None) -> None:
         text = self.source[self.start:self.current]
         self.tokens.append(Token(type, text, literal, self.line))
-
-
